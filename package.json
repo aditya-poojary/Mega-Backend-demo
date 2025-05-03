@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "a backend at chai aaur code channel - youtube",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon srx/index.js"
   },
   "keywords": [
     "chai",
@@ -13,5 +14,8 @@
     "express"
   ],
   "author": "Aditya Poojary",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
 }
