@@ -1,12 +1,12 @@
 import { v2 as cloudinary } from 'cloudinary';
-
+import fs from 'fs'
 
 
 // Configuration
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET // Click 'View API Keys' above to copy your API secret
+    api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
 const uploadOnCloudinary = async (localFilePath) => {
@@ -17,12 +17,18 @@ const uploadOnCloudinary = async (localFilePath) => {
             resource_type: "auto"
         })
 
-        HTMLFormControlsCollection.log("File is uploaded on cloudinary", response.url);
+        // console.log("File is uploaded on cloudinary", response.url);
+
+        // Remove the locally saved temporary file after successful upload
+        fs.unlinkSync(localFilePath);
         return response;
     } catch (err) {
-        FileSystem.unlinkSync(localFilePath)
+        // Remove the locally saved temporary file even if upload failed
+        if (localFilePath && fs.existsSync(localFilePath)) {
+            fs.unlinkSync(localFilePath);
+        }
         return null;
     }
 }
 
-export {uploadOnCloudinary};
+export { uploadOnCloudinary };
