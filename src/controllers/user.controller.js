@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js"
 import { User } from "../models/user.model.js"
-import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import { deleteFileFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
 
@@ -11,7 +11,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
         const accessToken = user.generateAccessToken();
         const refreshToken = user.generateRefreshToken();
 
-        await user.save({ valisdateBeforeSave: false });
+        await user.save({ validateBeforeSave: false });
 
         return { accessToken, refreshToken };
 
@@ -217,7 +217,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
     }
 
     user.password = newPassword;
-    await user.save({ valisdateBeforeSave: false })
+    await user.save({ validateBeforeSave: false })
 
     return res
         .status(400)
@@ -238,7 +238,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
         throw new ApiError(400, "All fields are required")
     }
 
-    const user = User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set: {
@@ -277,6 +277,12 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
         { new: true }
     ).select("-password")
 
+    const deleteAvatar = await deleteFileFromCloudinary(avatar.url);
+
+    if (!deleteAvatar) {
+        throw new ApiError(500, "Failed to delete previous Avatar from Cloudinary")
+    }
+
     return res
         .status(200)
         .json(
@@ -306,6 +312,12 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
         },
         { new: true }
     ).select("-password")
+
+    const deleteCoverImage = await deleteFileFromCloudinary(coverImage.url);
+
+    if (!deleteCoverImage) {
+        throw new ApiError(500, "Failed to delete previous coverImage from Cloudinary")
+    }
 
     return res
         .status(200)
